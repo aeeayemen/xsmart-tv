@@ -1,4 +1,6 @@
 window.livetvView = {
+    hls: null,
+
     render: async function (container) {
         App.showLoader();
 
@@ -25,20 +27,22 @@ window.livetvView = {
                 </div>
             </div>
 
-            <div class="page-layout">
-                <div class="sidebar" id="livetv-sidebar">
-                    <div class="sidebar-item active" data-cat="all">عرض الكل</div>
-                    <div class="sidebar-item" data-cat="favorites" style="border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; padding-bottom: 15px;">❤️ المفضلة</div>
-                </div>
-                <div class="content-area" id="livetv-content">
-                    <h2 class="row-title" style="margin-bottom: 20px;">قنوات البث المباشر</h2>
-                    <div id="livetv-grid" class="content-grid">
+            <div class="livetv-layout">
+                <div class="livetv-sidebar-v2" id="livetv-sidebar">
+                    <div class="cat-accordion-item">
+                        <div class="cat-header active" data-cat="favorites">❤️ المفضلة</div>
+                        <div class="cat-channels-list open" id="list-favorites"></div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="legal-footer">
-                نحن مجرد مشغل وسائط (Media Player) ولا نوفر أو نستضيف أي محتوى.
+                <div class="livetv-main-player">
+                    <div class="inline-player-wrapper">
+                        <video id="inline-video" controls autoplay></video>
+                    </div>
+                    <div class="channel-info-overlay">
+                        <h2 id="current-channel-name">جاري التحميل...</h2>
+                        <button class="btn btn-secondary" id="inline-fav-btn" style="margin-top: 10px;">إضافة للمفضلة</button>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -50,7 +54,6 @@ window.livetvView = {
         });
 
         await this.loadCategories();
-        await this.loadLiveTV('all');
         App.hideLoader();
         SpatialNavigation.initFocus(container);
     },
@@ -59,71 +62,145 @@ window.livetvView = {
         const sidebar = document.getElementById('livetv-sidebar');
         const categories = await API.getCategories('get_live_categories');
 
+        // Load favorites first
+        this.renderChannels('favorites', document.getElementById('list-favorites'));
+
         if (categories && categories.length > 0) {
-            categories.forEach(cat => {
+            for (const cat of categories) {
                 const item = document.createElement('div');
-                item.className = 'sidebar-item';
-                item.dataset.cat = cat.category_id;
-                item.textContent = cat.category_name;
-                item.addEventListener('click', () => {
-                    sidebar.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-                    item.classList.add('active');
-                    this.loadLiveTV(cat.category_id);
-                });
+                item.className = 'cat-accordion-item';
+                item.innerHTML = `
+                    <div class="cat-header" data-cat="${cat.category_id}">${cat.category_name}</div>
+                    <div class="cat-channels-list" id="list-${cat.category_id}"></div>
+                `;
                 sidebar.appendChild(item);
-            });
+
+                const header = item.querySelector('.cat-header');
+                const list = item.querySelector('.cat-channels-list');
+
+                header.addEventListener('click', async () => {
+                    const isOpen = list.classList.contains('open');
+                    // Close others
+                    document.querySelectorAll('.cat-channels-list').forEach(el => el.classList.remove('open'));
+                    document.querySelectorAll('.cat-header').forEach(el => el.classList.remove('active'));
+
+                    if (!isOpen) {
+                        list.classList.add('open');
+                        header.classList.add('active');
+                        if (list.innerHTML === '') {
+                            list.innerHTML = '<div style="padding: 10px; color: #666;">جاري التحميل...</div>';
+                            await this.renderChannels(cat.category_id, list);
+                        }
+                    }
+                });
+            }
         }
 
-        sidebar.querySelector('[data-cat="all"]').addEventListener('click', () => {
-            sidebar.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-            sidebar.querySelector('[data-cat="all"]').classList.add('active');
-            this.loadLiveTV('all');
-        });
-
-        // Wire up the "Favorites" button
-        sidebar.querySelector('[data-cat="favorites"]').addEventListener('click', () => {
-            sidebar.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-            sidebar.querySelector('[data-cat="favorites"]').classList.add('active');
-            this.loadLiveTV('favorites');
-        });
+        // Auto-play first available channel
+        this.playFirstAvailable();
     },
 
-    loadLiveTV: async function (categoryId) {
-        const grid = document.getElementById('livetv-grid');
-        grid.innerHTML = '<p style="color: var(--text-secondary);">جاري التحميل...</p>';
+    renderChannels: async function (categoryId, container) {
+        let channels = [];
+        if (categoryId === 'favorites') {
+            channels = Storage.get('favorites_livetv') || [];
+        } else {
+            channels = await API.getStreams('get_live_streams', categoryId);
+        }
 
-        try {
-            let allStreams = [];
-            if (categoryId === 'all') {
-                allStreams = await API.getStreams('get_live_streams', '');
-            } else if (categoryId === 'favorites') {
-                allStreams = Storage.get('favorites_livetv') || [];
-            } else {
-                allStreams = await API.getStreams('get_live_streams', categoryId);
-            }
-
-            if (allStreams.length > 0) {
-                let html = '';
-                allStreams.forEach(item => {
-                    const id = item.stream_id;
-                    const name = item.name || item.title || "بدون عنوان";
-                    const icon = item.stream_icon || item.cover || 'https://via.placeholder.com/300x300/e74c3c/ffffff?text=Live+TV';
-
-                    html += `
-                        <div class="grid-item">
-                            <img src="${icon}" alt="${name}" loading="lazy" class="poster" style="height: 160px; object-fit: contain; background: #222;"
-                                 onclick="Router.navigate('#/player?type=live&id=${id}&name=${encodeURIComponent(name)}&icon=${encodeURIComponent(icon)}')">
-                            <h4 style="margin-top: 8px; font-size: 0.9rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${name}</h4>
-                        </div>
-                    `;
+        if (channels.length > 0) {
+            container.innerHTML = '';
+            channels.forEach(ch => {
+                const chDiv = document.createElement('div');
+                chDiv.className = 'channel-item-v2';
+                chDiv.textContent = ch.name;
+                chDiv.addEventListener('click', () => {
+                    this.playChannel(ch);
+                    document.querySelectorAll('.channel-item-v2').forEach(el => el.classList.remove('active'));
+                    chDiv.classList.add('active');
                 });
-                grid.innerHTML = html;
+                container.appendChild(chDiv);
+            });
+        } else {
+            container.innerHTML = `<div style="padding: 10px; color: #666;">${categoryId === 'favorites' ? 'لا يوجد مفضلات' : 'لا توجد قنوات'}</div>`;
+        }
+    },
+
+    playChannel: function (channel) {
+        const video = document.getElementById('inline-video');
+        const nameEl = document.getElementById('current-channel-name');
+        const favBtn = document.getElementById('inline-fav-btn');
+
+        if (!video) return;
+
+        nameEl.textContent = channel.name;
+        const streamUrl = API.getStreamUrl('live', channel.stream_id);
+
+        if (this.hls) {
+            this.hls.destroy();
+        }
+
+        if (Hls.isSupported()) {
+            this.hls = new Hls();
+            this.hls.loadSource(streamUrl);
+            this.hls.attachMedia(video);
+            this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play();
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = streamUrl;
+            video.play();
+        }
+
+        // Update fav button status
+        const updateFavBtn = () => {
+            const isFav = Storage.isFavorite('live', channel.stream_id);
+            favBtn.textContent = isFav ? '❤️ إزالة من المفضلة' : '🤍 إضافة للمفضلة';
+        };
+        updateFavBtn();
+
+        // Fav button logic
+        favBtn.onclick = () => {
+            if (Storage.isFavorite('live', channel.stream_id)) {
+                Storage.removeFavorite('live', channel.stream_id);
             } else {
-                grid.innerHTML = '<p>لا توجد قنوات متاحة حالياً.</p>';
+                Storage.addFavorite('live', {
+                    stream_id: channel.stream_id,
+                    name: channel.name,
+                    stream_icon: channel.stream_icon || ""
+                });
             }
-        } catch (e) {
-            console.error(e);
-            grid.innerHTML = '<p>حدث خطأ في تحميل القنوات.</p>';
+            updateFavBtn();
+            this.renderChannels('favorites', document.getElementById('list-favorites'));
+        };
+    },
+
+    playFirstAvailable: async function () {
+        // Try favorites first, if empty try first category
+        let channels = Storage.get('favorites_livetv') || [];
+        if (channels.length > 0) {
+            this.playChannel(channels[0]);
+            return;
+        }
+
+        const categories = await API.getCategories('get_live_categories');
+        if (categories && categories.length > 0) {
+            const firstCatList = document.getElementById(`list-${categories[0].category_id}`);
+            const firstHeader = document.querySelector(`[data-cat="${categories[0].category_id}"]`);
+
+            // Open first category
+            if (firstHeader) firstHeader.click();
+
+            // Wait a bit for render
+            setTimeout(async () => {
+                const firstChannels = await API.getStreams('get_live_streams', categories[0].category_id);
+                if (firstChannels.length > 0) {
+                    this.playChannel(firstChannels[0]);
+                    const firstItem = document.querySelector('.channel-item-v2');
+                    if (firstItem) firstItem.classList.add('active');
+                }
+            }, 500);
         }
     }
 };
+

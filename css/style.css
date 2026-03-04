@@ -601,6 +601,118 @@ video {
 /* Responsive Design        */
 /* ======================== */
 
+/* New Live TV Layout */
+.livetv-layout {
+    display: flex;
+    height: calc(100vh - 80px);
+    /* Subtract navbar height */
+    overflow: hidden;
+    background: #000;
+}
+
+.livetv-sidebar-v2 {
+    width: 300px;
+    background: #111;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.livetv-main-player {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: radial-gradient(circle, #222 0%, #000 100%);
+    position: relative;
+}
+
+.inline-player-wrapper {
+    width: 90%;
+    max-width: 1000px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 1);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #333;
+}
+
+#inline-video {
+    width: 100%;
+    height: 100%;
+}
+
+.channel-info-overlay {
+    margin-top: 20px;
+    text-align: center;
+    color: white;
+}
+
+/* Accordion Sidebar */
+.cat-accordion-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cat-header {
+    padding: 15px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+    background: #1a1a1a;
+}
+
+.cat-header:hover,
+.cat-header.active {
+    background: #222;
+    color: var(--primary-color);
+}
+
+.cat-header::after {
+    content: '▾';
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.cat-header.active::after {
+    transform: rotate(180deg);
+}
+
+.cat-channels-list {
+    display: none;
+    background: #0a0a0a;
+}
+
+.cat-channels-list.open {
+    display: block;
+}
+
+.channel-item-v2 {
+    padding: 12px 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #bbb;
+    transition: all 0.2s;
+    border-right: 3px solid transparent;
+}
+
+.channel-item-v2:hover,
+.channel-item-v2.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.channel-item-v2.active {
+    border-right-color: var(--primary-color);
+    background: rgba(227, 25, 43, 0.1);
+}
+
 /* Tablet (max-width: 1024px) */
 @media screen and (max-width: 1024px) {
     .navbar {
