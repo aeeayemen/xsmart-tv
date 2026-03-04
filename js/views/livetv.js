@@ -30,8 +30,12 @@ window.livetvView = {
             <div class="livetv-layout">
                 <div class="livetv-sidebar-v2" id="livetv-sidebar">
                     <div class="cat-accordion-item">
-                        <div class="cat-header active" data-cat="favorites">❤️ المفضلة</div>
-                        <div class="cat-channels-list open" id="list-favorites"></div>
+                        <div class="cat-header active" data-cat="all">📺 عرض الكل</div>
+                        <div class="cat-channels-list open" id="list-all"></div>
+                    </div>
+                    <div class="cat-accordion-item">
+                        <div class="cat-header" data-cat="favorites">❤️ المفضلة</div>
+                        <div class="cat-channels-list" id="list-favorites"></div>
                     </div>
                 </div>
                 <div class="livetv-main-player">
@@ -62,8 +66,41 @@ window.livetvView = {
         const sidebar = document.getElementById('livetv-sidebar');
         const categories = await API.getCategories('get_live_categories');
 
-        // Load favorites first
-        this.renderChannels('favorites', document.getElementById('list-favorites'));
+        // Setup Favorites Toggle
+        const favHeader = document.querySelector('[data-cat="favorites"]');
+        const favList = document.getElementById('list-favorites');
+        favHeader.addEventListener('click', async () => {
+            const isOpen = favList.classList.contains('open');
+            document.querySelectorAll('.cat-channels-list').forEach(el => el.classList.remove('open'));
+            document.querySelectorAll('.cat-header').forEach(el => el.classList.remove('active'));
+            if (!isOpen) {
+                favList.classList.add('open');
+                favHeader.classList.add('active');
+                if (favList.innerHTML === '') this.renderChannels('favorites', favList);
+            }
+        });
+
+        // Setup Show All Toggle
+        const allHeader = document.querySelector('[data-cat="all"]');
+        const allList = document.getElementById('list-all');
+        allHeader.addEventListener('click', async () => {
+            const isOpen = allList.classList.contains('open');
+            document.querySelectorAll('.cat-channels-list').forEach(el => el.classList.remove('open'));
+            document.querySelectorAll('.cat-header').forEach(el => el.classList.remove('active'));
+            if (!isOpen) {
+                allList.classList.add('open');
+                allHeader.classList.add('active');
+                if (allList.innerHTML === '') {
+                    allList.innerHTML = '<div style="padding: 10px; color: #666;">جاري التحميل...</div>';
+                    await this.renderChannels('all', allList);
+                }
+            }
+        });
+
+        // Load Show All by default first (since it's open now)
+        this.renderChannels('all', allList);
+        // Also initially load favorites in background or when clicked
+        // this.renderChannels('favorites', favList);
 
         if (categories && categories.length > 0) {
             for (const cat of categories) {
@@ -104,6 +141,8 @@ window.livetvView = {
         let channels = [];
         if (categoryId === 'favorites') {
             channels = Storage.get('favorites_livetv') || [];
+        } else if (categoryId === 'all') {
+            channels = await API.getStreams('get_live_streams', '');
         } else {
             channels = await API.getStreams('get_live_streams', categoryId);
         }
@@ -176,30 +215,25 @@ window.livetvView = {
     },
 
     playFirstAvailable: async function () {
-        // Try favorites first, if empty try first category
-        let channels = Storage.get('favorites_livetv') || [];
-        if (channels.length > 0) {
-            this.playChannel(channels[0]);
+        // Try Show All first as it's the first dropdown and open by default
+        const allList = document.getElementById('list-all');
+        const allChannels = await API.getStreams('get_live_streams', '');
+
+        if (allChannels && allChannels.length > 0) {
+            this.playChannel(allChannels[0]);
+            // Highlight it in the list after it renders
+            setTimeout(() => {
+                const firstItem = allList.querySelector('.channel-item-v2');
+                if (firstItem) firstItem.classList.add('active');
+            }, 600);
             return;
         }
 
-        const categories = await API.getCategories('get_live_categories');
-        if (categories && categories.length > 0) {
-            const firstCatList = document.getElementById(`list-${categories[0].category_id}`);
-            const firstHeader = document.querySelector(`[data-cat="${categories[0].category_id}"]`);
-
-            // Open first category
-            if (firstHeader) firstHeader.click();
-
-            // Wait a bit for render
-            setTimeout(async () => {
-                const firstChannels = await API.getStreams('get_live_streams', categories[0].category_id);
-                if (firstChannels.length > 0) {
-                    this.playChannel(firstChannels[0]);
-                    const firstItem = document.querySelector('.channel-item-v2');
-                    if (firstItem) firstItem.classList.add('active');
-                }
-            }, 500);
+        // Fallback to favorites
+        let favChannels = Storage.get('favorites_livetv') || [];
+        if (favChannels.length > 0) {
+            this.playChannel(favChannels[0]);
+            return;
         }
     }
 };

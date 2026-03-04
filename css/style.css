@@ -614,6 +614,7 @@ video {
 
 .livetv-sidebar-v2 {
     width: 300px;
+    margin-top: 2%;
     background: #111;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
