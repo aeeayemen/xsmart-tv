@@ -862,6 +862,33 @@ video {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
+
+    /* Live TV Responsive */
+    .livetv-layout {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+        margin-top: 130px;
+        /* Adjust for taller mobile navbar */
+    }
+
+    .livetv-sidebar-v2 {
+        width: 100%;
+        height: 300px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+    }
+
+    .livetv-main-player {
+        width: 100%;
+        min-height: 300px;
+        padding: 15px;
+    }
+
+    .inline-player-wrapper {
+        width: 100%;
+    }
 }
 
 /* Phone Landscape: keep sidebar vertical */
@@ -1096,5 +1123,24 @@ video {
 
     .user-info {
         display: none;
+    }
+
+    /* Live TV Refinements */
+    .livetv-layout {
+        margin-top: 150px;
+    }
+
+    .cat-header {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    .channel-item-v2 {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+
+    .channel-info-overlay h2 {
+        font-size: 1.1rem;
     }
 }
