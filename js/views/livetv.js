@@ -31,7 +31,7 @@ window.livetvView = {
                 </div>
                 <div class="content-area" id="livetv-content">
                     <h2 class="row-title" style="margin-bottom: 20px;">قنوات البث المباشر</h2>
-                    <div id="livetv-grid" style="display: flex; flex-wrap: wrap; gap: 30px;">
+                    <div id="livetv-grid" class="content-grid">
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@ window.livetvView = {
                     const icon = item.stream_icon || item.cover || 'https://via.placeholder.com/300x300/e74c3c/ffffff?text=Live+TV';
 
                     html += `
-                        <div style="width: 160px; text-align: center; margin-bottom: 15px;">
+                        <div class="grid-item">
                             <img src="${icon}" alt="${name}" loading="lazy" class="poster" style="height: 160px; object-fit: contain; background: #222;"
                                  onclick="Router.navigate('#/player?type=live&id=${id}')">
                             <h4 style="margin-top: 8px; font-size: 0.9rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${name}</h4>

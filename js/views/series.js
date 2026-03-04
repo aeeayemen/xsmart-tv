@@ -31,7 +31,7 @@ window.seriesView = {
                 </div>
                 <div class="content-area" id="series-content">
                     <h2 class="row-title" style="margin-bottom: 20px;">جميع المسلسلات</h2>
-                    <div id="series-grid" style="display: flex; flex-wrap: wrap; gap: 30px;">
+                    <div id="series-grid" class="content-grid">
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@ window.seriesView = {
                     const icon = item.cover || item.stream_icon || 'https://via.placeholder.com/300x450?text=' + encodeURIComponent(name);
 
                     html += `
-                        <div style="width: 160px; text-align: center; margin-bottom: 15px;">
+                        <div class="grid-item">
                             <img src="${icon}" alt="${name}" loading="lazy" class="poster" 
                                  onclick="Router.navigate('#/details?type=series&id=${id}')">
                             <h4 style="margin-top: 8px; font-size: 0.9rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${name}</h4>
