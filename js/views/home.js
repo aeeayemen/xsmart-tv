@@ -183,6 +183,7 @@ window.homeView = {
 
             rowHtml += `
                 <img src="${icon}" alt="${name}" loading="lazy" class="poster" 
+                     onerror="this.onerror=null; this.outerHTML='<div class=&quot;poster fallback-poster&quot; onclick=&quot;Router.navigate(\\'#/details?type=${type}&id=${id}\\')&quot;><span>' + this.alt + '</span></div>';"
                      onclick="Router.navigate('#/details?type=${type}&id=${id}')">
             `;
         });

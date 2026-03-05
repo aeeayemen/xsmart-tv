@@ -148,6 +148,7 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 1%;
     padding: 15px 40px;
     background: rgba(168, 85, 247, 0.85);
     /* Vibrant light purple (Purple-500 ish) */
@@ -410,6 +411,23 @@ a {
     background-color: #222;
 }
 
+.fallback-poster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #111;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    word-break: break-word;
+    box-sizing: border-box;
+    line-height: 1.4;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+}
+
 .stream-card {
     background-color: var(--surface-color);
     border-radius: 8px;
@@ -430,7 +448,9 @@ a {
 }
 
 .poster:hover,
-.poster.focused {
+.poster.focused,
+.fallback-poster:hover,
+.fallback-poster.focused {
     transform: scale(1.08);
     border-color: #8A2BE2;
     /* Blue Violet hover effect */

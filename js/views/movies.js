@@ -139,6 +139,7 @@ window.moviesView = {
                     html += `
                         <div class="grid-item">
                             <img src="${icon}" alt="${name}" loading="lazy" class="poster" 
+                                 onerror="this.onerror=null; this.outerHTML='<div class=&quot;poster fallback-poster&quot; onclick=&quot;Router.navigate(\\'#/details?type=movie&id=${id}\\')&quot;><span>' + this.alt + '</span></div>';"
                                  onclick="Router.navigate('#/details?type=movie&id=${id}')">
                             <h4 style="margin-top: 8px; font-size: 0.9rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${name}</h4>
                         </div>
