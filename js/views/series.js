@@ -1,5 +1,5 @@
 window.seriesView = {
-    render: async function (container) {
+    render: async function (container, params) {
         App.showLoader();
 
         const userInfo = Storage.get('user_info');
