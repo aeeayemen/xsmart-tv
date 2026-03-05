@@ -66,6 +66,14 @@ window.homeView = {
                 latestStreams = latestStreams.slice(0, 20); // Top 20
             }
 
+            // Fetch Live TV channels
+            const liveCats = await API.getCategories('get_live_categories');
+            let liveStreams = [];
+            if (liveCats && liveCats.length > 0) {
+                liveStreams = await API.getStreams('get_live_streams', liveCats[0].category_id);
+                liveStreams = liveStreams.slice(0, 20); // Top 20
+            }
+
             // Load recently watched from local storage
             const recentSeries = Storage.getHistory('series');
             const recentMovies = Storage.getHistory('movie');
@@ -97,6 +105,11 @@ window.homeView = {
             // 3. Recently Watched Movies
             if (recentMovies.length > 0) {
                 html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie', 'row-recent-movies');
+            }
+
+            // 4. Live TV Channels
+            if (liveStreams.length > 0) {
+                html += this.buildCarouselRow('القنوات التلفزيونية', liveStreams, 'livetv', 'row-live-channels');
             }
 
             if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0) {
