@@ -29,6 +29,10 @@ window.livetvView = {
 
             <div class="livetv-layout">
                 <div class="livetv-sidebar-v2" id="livetv-sidebar">
+                    <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <input type="text" id="live-search-input" placeholder="بحث عن قناة..." 
+                               style="width: 100%; padding: 10px; border-radius: 6px; border: none; background: rgba(255,255,255,0.05); color: white; outline: none; border: 1px solid rgba(255,255,255,0.1);">
+                    </div>
                     <div class="cat-accordion-item">
                         <div class="cat-header active" data-cat="all">📺 عرض الكل</div>
                         <div class="cat-channels-list open" id="list-all"></div>
@@ -58,8 +62,51 @@ window.livetvView = {
         });
 
         await this.loadCategories();
+
+        // Setup Search Logic
+        const searchInput = document.getElementById('live-search-input');
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim().toLowerCase();
+            const allList = document.getElementById('list-all');
+            const allHeader = document.querySelector('[data-cat="all"]');
+
+            // Switch to 'Show All' to show search results
+            document.querySelectorAll('.cat-channels-list').forEach(el => el.classList.remove('open'));
+            document.querySelectorAll('.cat-header').forEach(el => el.classList.remove('active'));
+            allList.classList.add('open');
+            allHeader.classList.add('active');
+
+            if (query === '') {
+                this.renderChannels('all', allList);
+            } else {
+                this.renderFilteredChannels(query, allList);
+            }
+        });
+
         App.hideLoader();
         SpatialNavigation.initFocus(container);
+    },
+
+    renderFilteredChannels: async function (query, container) {
+        let channels = await API.getStreams('get_live_streams', '');
+        const filtered = channels.filter(ch => ch.name.toLowerCase().includes(query));
+
+        if (filtered.length > 0) {
+            container.innerHTML = '';
+            filtered.forEach(ch => {
+                const chDiv = document.createElement('div');
+                chDiv.className = 'channel-item-v2';
+                chDiv.textContent = ch.name;
+                chDiv.addEventListener('click', () => {
+                    this.playChannel(ch);
+                    document.querySelectorAll('.channel-item-v2').forEach(el => el.classList.remove('active'));
+                    chDiv.classList.add('active');
+                });
+                container.appendChild(chDiv);
+            });
+        } else {
+            container.innerHTML = '<div style="padding: 10px; color: #666;">لم يتم العثور على نتائج.</div>';
+        }
     },
 
     loadCategories: async function () {

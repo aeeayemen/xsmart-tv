@@ -65,6 +65,13 @@ window.homeView = {
                 latestStreams = await API.getStreams('get_vod_streams', moviesCats[0].category_id);
                 latestStreams = latestStreams.slice(0, 20); // Top 20
             }
+            // Fetch Latest Series
+            const seriesCats = await API.getCategories('get_series_categories');
+            let latestSeries = [];
+            if (seriesCats && seriesCats.length > 0) {
+                latestSeries = await API.getStreams('get_series', seriesCats[0].category_id);
+                latestSeries = latestSeries.slice(0, 20);
+            }
 
             // Fetch Live TV channels
             const liveCats = await API.getCategories('get_live_categories');
@@ -88,43 +95,53 @@ window.homeView = {
 
             let html = '';
 
-            // Hero section
+            // Hero section with Search
             html += `
                 <div class="hero-banner" style="background-image: url('https://image.tmdb.org/t/p/original/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg');">
                     <div class="hero-content">
                         <h1 class="hero-title">مرحباً ${userInfo ? userInfo.username : 'بك'}</h1>
                         <p class="hero-desc">استمتع بأحدث الإضافات وتابع مشاهدة ما تفضله من حيث توقفت.</p>
-                        <button class="btn" onclick="Router.navigate('#/movies')">تصفح الأفلام</button>
+                        
+                        <div class="search-container-home" style="margin-top: 20px; display: flex; gap: 10px; max-width: 400px;">
+                            <input type="text" id="home-search-input" placeholder="ابحث عن فيلم، مسلسل، أو قناة..." 
+                                   style="flex-grow: 1; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; border: 1px solid rgba(255,255,255,0.2);">
+                            <button class="btn" id="home-search-btn" style="padding: 10px 20px;">🔍</button>
+                        </div>
                     </div>
                 </div>
             `;
 
-            // 1. Latest Additions
+            // 1. Latest Additions (Movies)
             if (latestStreams.length > 0) {
-                html += this.buildCarouselRow('أحدث الإضافات', latestStreams, 'movie', 'row-latest');
+                html += this.buildCarouselRow('أحدث الأفلام', latestStreams, 'movie', 'row-latest');
             }
 
-            // 2. Recently Watched Series
+            // 2. Latest Series
+            if (latestSeries.length > 0) {
+                html += this.buildCarouselRow('أحدث المسلسلات', latestSeries, 'series', 'row-latest-series');
+            }
+
+            // 3. Recently Watched Series
             if (recentSeries.length > 0) {
                 html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series', 'row-recent-series');
             }
 
-            // 3. Recently Watched Movies
+            // 4. Recently Watched Movies
             if (recentMovies.length > 0) {
                 html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie', 'row-recent-movies');
             }
 
-            // 4. Recently Watched Channels
+            // 5. Recently Watched Channels
             if (recentLive.length > 0) {
                 html += this.buildCarouselRow('قنوات شاهدتها مؤخراً', recentLive, 'livetv', 'row-recent-live');
             }
 
-            // 5. Live TV Channels
+            // 6. Live TV Channels
             if (liveStreams.length > 0) {
                 html += this.buildCarouselRow('القنوات التلفزيونية', liveStreams, 'livetv', 'row-live-channels');
             }
 
-            // 6. Favorites (Combined or separate?)
+            // 7. Favorites
             if (favMovies.length > 0) {
                 html += this.buildCarouselRow('الأفلام المفضلة', favMovies, 'movie', 'row-fav-movies');
             }
@@ -135,7 +152,7 @@ window.homeView = {
                 html += this.buildCarouselRow('القنوات المفضلة', favLive, 'livetv', 'row-fav-live');
             }
 
-            if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0 && recentLive.length === 0 && favMovies.length === 0 && favSeries.length === 0 && favLive.length === 0) {
+            if (latestStreams.length === 0 && latestSeries.length === 0 && recentMovies.length === 0 && recentSeries.length === 0 && recentLive.length === 0 && favMovies.length === 0 && favSeries.length === 0 && favLive.length === 0) {
                 html += `
                     <div style="padding: 40px; text-align: center; color: #888;">
                         <h2 style="margin-bottom: 20px;">لا يوجد محتوى لعرضه حالياً</h2>
@@ -145,6 +162,23 @@ window.homeView = {
             }
 
             contentDiv.innerHTML = html;
+
+            // Setup Search Logic
+            const searchInput = document.getElementById('home-search-input');
+            const searchBtn = document.getElementById('home-search-btn');
+
+            const performSearch = () => {
+                const query = searchInput.value.trim();
+                if (query) {
+                    // Navigate to a search view or handle in-place (let's use params)
+                    Router.navigate(`#/movies?search=${encodeURIComponent(query)}`);
+                }
+            };
+
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
 
         } catch (e) {
             console.error(e);

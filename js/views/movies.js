@@ -51,8 +51,17 @@ window.moviesView = {
 
         // Load categories into sidebar
         await this.loadCategories();
-        // Load all movies by default
-        await this.loadMovies('all');
+
+        // Handle search query if present
+        if (params && params.search) {
+            const sidebar = document.getElementById('movies-sidebar');
+            sidebar.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            await this.loadMovies('all', params.search);
+        } else {
+            // Load all movies by default
+            await this.loadMovies('all');
+        }
+
         App.hideLoader();
         SpatialNavigation.initFocus(container);
     },
@@ -93,8 +102,9 @@ window.moviesView = {
         });
     },
 
-    loadMovies: async function (categoryId) {
+    loadMovies: async function (categoryId, query = '') {
         const grid = document.getElementById('movies-grid');
+        const titleEl = document.querySelector('.content-area .row-title');
         grid.innerHTML = '<p style="color: var(--text-secondary);">جاري التحميل...</p>';
 
         try {
@@ -105,6 +115,18 @@ window.moviesView = {
                 allStreams = Storage.get('favorites_movie') || [];
             } else {
                 allStreams = await API.getStreams('get_vod_streams', categoryId);
+            }
+
+            // Apply Search Filtering if query exists
+            if (query) {
+                const q = query.toLowerCase();
+                allStreams = allStreams.filter(item =>
+                    (item.name && item.name.toLowerCase().includes(q)) ||
+                    (item.title && item.title.toLowerCase().includes(q))
+                );
+                titleEl.textContent = `نتائج البحث عن: ${query}`;
+            } else {
+                titleEl.textContent = categoryId === 'all' ? 'جميع الأفلام' : (categoryId === 'favorites' ? 'المفضلة' : 'تصفية حسب التصنيف');
             }
 
             if (allStreams.length > 0) {

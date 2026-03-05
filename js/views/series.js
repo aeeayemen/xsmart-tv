@@ -49,8 +49,19 @@ window.seriesView = {
             Router.navigate('#/login');
         });
 
+        // Load categories into sidebar
         await this.loadCategories();
-        await this.loadSeries('all');
+
+        // Handle search query if present
+        if (params && params.search) {
+            const sidebar = document.getElementById('series-sidebar');
+            sidebar.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            await this.loadSeries('all', params.search);
+        } else {
+            // Load all series by default
+            await this.loadSeries('all');
+        }
+
         App.hideLoader();
         SpatialNavigation.initFocus(container);
     },
@@ -88,8 +99,9 @@ window.seriesView = {
         });
     },
 
-    loadSeries: async function (categoryId) {
+    loadSeries: async function (categoryId, query = '') {
         const grid = document.getElementById('series-grid');
+        const titleEl = document.querySelector('.content-area .row-title');
         grid.innerHTML = '<p style="color: var(--text-secondary);">جاري التحميل...</p>';
 
         try {
@@ -100,6 +112,18 @@ window.seriesView = {
                 allStreams = Storage.get('favorites_series') || [];
             } else {
                 allStreams = await API.getStreams('get_series', categoryId);
+            }
+
+            // Apply Search Filtering if query exists
+            if (query) {
+                const q = query.toLowerCase();
+                allStreams = allStreams.filter(item =>
+                    (item.name && item.name.toLowerCase().includes(q)) ||
+                    (item.title && item.title.toLowerCase().includes(q))
+                );
+                titleEl.textContent = `نتائج البحث عن: ${query}`;
+            } else {
+                titleEl.textContent = categoryId === 'all' ? 'جميع المسلسلات' : (categoryId === 'favorites' ? 'المفضلة' : 'تصفية حسب التصنيف');
             }
 
             if (allStreams.length > 0) {
