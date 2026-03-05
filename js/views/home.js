@@ -77,6 +77,13 @@ window.homeView = {
             // Load recently watched from local storage
             const recentSeries = Storage.getHistory('series');
             const recentMovies = Storage.getHistory('movie');
+            const recentLive = Storage.getHistory('livetv');
+
+            // Load favorites
+            const favMovies = Storage.get('favorites_movie') || [];
+            const favSeries = Storage.get('favorites_series') || [];
+            const favLive = Storage.get('favorites_livetv') || [];
+
             const userInfo = Storage.get('user_info');
 
             let html = '';
@@ -107,12 +114,28 @@ window.homeView = {
                 html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie', 'row-recent-movies');
             }
 
-            // 4. Live TV Channels
+            // 4. Recently Watched Channels
+            if (recentLive.length > 0) {
+                html += this.buildCarouselRow('قنوات شاهدتها مؤخراً', recentLive, 'livetv', 'row-recent-live');
+            }
+
+            // 5. Live TV Channels
             if (liveStreams.length > 0) {
                 html += this.buildCarouselRow('القنوات التلفزيونية', liveStreams, 'livetv', 'row-live-channels');
             }
 
-            if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0) {
+            // 6. Favorites (Combined or separate?)
+            if (favMovies.length > 0) {
+                html += this.buildCarouselRow('الأفلام المفضلة', favMovies, 'movie', 'row-fav-movies');
+            }
+            if (favSeries.length > 0) {
+                html += this.buildCarouselRow('المسلسلات المفضلة', favSeries, 'series', 'row-fav-series');
+            }
+            if (favLive.length > 0) {
+                html += this.buildCarouselRow('القنوات المفضلة', favLive, 'livetv', 'row-fav-live');
+            }
+
+            if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0 && recentLive.length === 0 && favMovies.length === 0 && favSeries.length === 0 && favLive.length === 0) {
                 html += `
                     <div style="padding: 40px; text-align: center; color: #888;">
                         <h2 style="margin-bottom: 20px;">لا يوجد محتوى لعرضه حالياً</h2>
