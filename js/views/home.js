@@ -48,6 +48,9 @@ window.homeView = {
 
         // Re-init spatial navigation after loading content
         SpatialNavigation.initFocus(container);
+
+        // Start auto-scrolling the carousels
+        this.startAutoScroll();
     },
 
     loadContent: async function () {
@@ -148,5 +151,32 @@ window.homeView = {
             // amount > 0 scrolls left (forward in RTL), amount < 0 scrolls right (backward in RTL)
             row.scrollBy({ left: amount, behavior: 'smooth' });
         }
+    },
+
+    startAutoScroll: function () {
+        if (this.scrollInterval) {
+            clearInterval(this.scrollInterval);
+        }
+
+        this.scrollInterval = setInterval(() => {
+            const rows = document.querySelectorAll('.row-posters');
+            rows.forEach(row => {
+                // Pause if user is hovering over the row
+                if (row.parentNode.matches(':hover')) return;
+
+                const maxScroll = row.scrollWidth - row.clientWidth;
+                if (maxScroll <= 0) return; // No need to scroll
+
+                const currentScroll = Math.abs(row.scrollLeft);
+
+                // If reached the end, snap back to start. Otherwise, scroll slightly.
+                if (currentScroll >= maxScroll - 10) {
+                    row.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    // Positive left value scrolls "forward" in RTL
+                    row.scrollBy({ left: 250, behavior: 'smooth' });
+                }
+            });
+        }, 3500); // 3.5 seconds
     }
 };
