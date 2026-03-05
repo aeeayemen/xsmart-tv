@@ -97,7 +97,7 @@ window.seriesView = {
             if (categoryId === 'all') {
                 allStreams = await API.getStreams('get_series', '');
             } else if (categoryId === 'favorites') {
-                allStreams = await API.getRemoteFavorites('series');
+                allStreams = Storage.get('favorites_series') || [];
             } else {
                 allStreams = await API.getStreams('get_series', categoryId);
             }

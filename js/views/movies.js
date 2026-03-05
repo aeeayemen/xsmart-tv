@@ -102,7 +102,7 @@ window.moviesView = {
             if (categoryId === 'all') {
                 allStreams = await API.getStreams('get_vod_streams', '');
             } else if (categoryId === 'favorites') {
-                allStreams = await API.getRemoteFavorites('vod');
+                allStreams = Storage.get('favorites_movie') || [];
             } else {
                 allStreams = await API.getStreams('get_vod_streams', categoryId);
             }
