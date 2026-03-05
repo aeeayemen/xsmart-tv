@@ -1,8 +1,14 @@
 const API = {
-    host: 'mock_host',
-    username: 'mock_user',
-    password: 'mock_password',
-    userInfo: { auth: 1, username: 'Mock User', exp_date: '1735689600' }, // date far in the future
+    // The backend URL where the PHP scripts are located.
+    // On Hostinger, this will be your actual domain, e.g., 'https://yourdomain.com/backend'
+    // For local testing with XAMPP/WAMP, it might be 'http://localhost/xsmart-tv/backend'
+    // For now, we set a configurable variable that easily switches production/local.
+    backendUrl: 'http://localhost/xsmart-tv/backend',
+
+    // Xstream details (kept for backward compatibility logic if needed)
+    host: '',
+    username: '',
+    password: '',
 
     init: function (host, username, password) {
         this.host = host;
@@ -14,18 +20,51 @@ const API = {
         return '#';
     },
 
+    register: async function (userData) {
+        try {
+            const response = await fetch(`${this.backendUrl}/register.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'فشل إنشاء الحساب');
+            }
+            return result;
+        } catch (error) {
+            console.error("Register Error:", error);
+            throw error;
+        }
+    },
+
     authenticate: async function () {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                Storage.setStr('xtream_credentials', JSON.stringify({
-                    host: this.host || 'mock',
-                    username: this.username || 'mock',
-                    password: this.password || 'mock'
-                }));
-                Storage.set('user_info', this.userInfo);
-                resolve({ user_info: this.userInfo });
-            }, 500); // simulate network delay
-        });
+        try {
+            const response = await fetch(`${this.backendUrl}/login.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: this.username,
+                    password: this.password
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'فشل تسجيل الدخول');
+            }
+
+            // Save token and user info
+            Storage.set('auth_token', result.token);
+            Storage.set('user_info', result.user_info);
+
+            return { user_info: result.user_info };
+        } catch (error) {
+            console.error("Auth Error:", error);
+            throw error;
+        }
     },
 
     getCategories: async function (type) {
@@ -140,5 +179,58 @@ const API = {
             return "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
         }
         return "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+    },
+
+    // New methods for Remote Favorites Management
+    getRemoteFavorites: async function (type = '') {
+        const userInfo = Storage.get('user_info');
+        if (!userInfo || !userInfo.id) return [];
+
+        try {
+            const response = await fetch(`${this.backendUrl}/favorites.php?user_id=${userInfo.id}&type=${type}`);
+            if (!response.ok) throw new Error('فشل جلب المفضلة');
+            return await response.json();
+        } catch (error) {
+            console.error("Fetch Favorites Error:", error);
+            return [];
+        }
+    },
+
+    addRemoteFavorite: async function (type, stream_id, name, icon_url) {
+        const userInfo = Storage.get('user_info');
+        if (!userInfo || !userInfo.id) return false;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/favorites.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: userInfo.id,
+                    type: type,
+                    stream_id: stream_id,
+                    name: name,
+                    icon_url: icon_url || ''
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error("Add Favorite Error:", error);
+            return false;
+        }
+    },
+
+    removeRemoteFavorite: async function (type, stream_id) {
+        const userInfo = Storage.get('user_info');
+        if (!userInfo || !userInfo.id) return false;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/favorites.php?user_id=${userInfo.id}&type=${type}&stream_id=${stream_id}`, {
+                method: 'DELETE'
+            });
+            return response.ok;
+        } catch (error) {
+            console.error("Remove Favorite Error:", error);
+            return false;
+        }
     }
 };

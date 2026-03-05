@@ -140,7 +140,7 @@ window.livetvView = {
     renderChannels: async function (categoryId, container) {
         let channels = [];
         if (categoryId === 'favorites') {
-            channels = Storage.get('favorites_livetv') || [];
+            channels = await API.getRemoteFavorites('live');
         } else if (categoryId === 'all') {
             channels = await API.getStreams('get_live_streams', '');
         } else {
@@ -192,25 +192,33 @@ window.livetvView = {
         }
 
         // Update fav button status
-        const updateFavBtn = () => {
-            const isFav = Storage.isFavorite('live', channel.stream_id);
+        const updateFavBtn = async () => {
+            const favs = await API.getRemoteFavorites('live');
+            const isFav = favs.some(f => String(f.stream_id) === String(channel.stream_id));
             favBtn.textContent = isFav ? '❤️ إزالة من المفضلة' : '🤍 إضافة للمفضلة';
+            favBtn.dataset.isFav = isFav ? "true" : "false"; // Store state to avoid refetching on click
         };
         updateFavBtn();
 
         // Fav button logic
-        favBtn.onclick = () => {
-            if (Storage.isFavorite('live', channel.stream_id)) {
-                Storage.removeFavorite('live', channel.stream_id);
+        favBtn.onclick = async () => {
+            const isFav = favBtn.dataset.isFav === "true";
+
+            // Optimistic UI update
+            favBtn.textContent = isFav ? '🤍 إضافة للمفضلة' : '❤️ إزالة من المفضلة';
+            favBtn.dataset.isFav = !isFav;
+
+            if (isFav) {
+                await API.removeRemoteFavorite('live', channel.stream_id);
             } else {
-                Storage.addFavorite('live', {
-                    stream_id: channel.stream_id,
-                    name: channel.name,
-                    stream_icon: channel.stream_icon || ""
-                });
+                await API.addRemoteFavorite('live', channel.stream_id, channel.name, channel.stream_icon);
             }
-            updateFavBtn();
-            this.renderChannels('favorites', document.getElementById('list-favorites'));
+
+            // Refresh favorites list if it's open
+            const favList = document.getElementById('list-favorites');
+            if (favList && favList.classList.contains('open')) {
+                this.renderChannels('favorites', favList);
+            }
         };
     },
 
@@ -230,8 +238,8 @@ window.livetvView = {
         }
 
         // Fallback to favorites
-        let favChannels = Storage.get('favorites_livetv') || [];
-        if (favChannels.length > 0) {
+        let favChannels = await API.getRemoteFavorites('live');
+        if (favChannels && favChannels.length > 0) {
             this.playChannel(favChannels[0]);
             return;
         }
