@@ -111,29 +111,29 @@ window.homeView = {
                 html += this.buildCarouselRow('أحدث الأفلام', latestStreams, 'movie', 'row-latest');
             }
 
-            // 2. Latest Series
-            if (latestSeries.length > 0) {
-                html += this.buildCarouselRow('أحدث المسلسلات', latestSeries, 'series', 'row-latest-series');
-            }
-
-            // 3. Recently Watched Series
-            if (recentSeries.length > 0) {
-                html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series', 'row-recent-series');
-            }
-
-            // 4. Recently Watched Movies
+            // 2. Recently Watched Movies
             if (recentMovies.length > 0) {
                 html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie', 'row-recent-movies');
             }
 
-            // 5. Recently Watched Channels
-            if (recentLive.length > 0) {
-                html += this.buildCarouselRow('قنوات شاهدتها مؤخراً', recentLive, 'livetv', 'row-recent-live');
+            // 3. Latest Series
+            if (latestSeries.length > 0) {
+                html += this.buildCarouselRow('أحدث المسلسلات', latestSeries, 'series', 'row-latest-series');
             }
 
-            // 6. Live TV Channels
+            // 4. Recently Watched Series
+            if (recentSeries.length > 0) {
+                html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series', 'row-recent-series');
+            }
+
+            // 5. Live TV Channels
             if (liveStreams.length > 0) {
                 html += this.buildCarouselRow('القنوات التلفزيونية', liveStreams, 'livetv', 'row-live-channels');
+            }
+
+            // 6. Recently Watched Channels
+            if (recentLive.length > 0) {
+                html += this.buildCarouselRow('قنوات شاهدتها مؤخراً', recentLive, 'livetv', 'row-recent-live');
             }
 
             // 7. Favorites
