@@ -148,8 +148,13 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 40px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
+    padding: 15px 40px;
+    background: rgba(0, 0, 0, 0.85);
+    /* Matte background */
+    backdrop-filter: blur(10px);
+    /* Add a frosted glass effect */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    /* Subtle border for clarity */
     z-index: 100;
 }
 
@@ -172,6 +177,20 @@ a {
 .nav-item.focused,
 .nav-item.active {
     color: var(--text-color);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    /* Glow effect */
+}
+
+.nav-logout {
+    color: #ff4d4d !important;
+    transition: all 0.3s;
+}
+
+.nav-logout:hover,
+.nav-logout.focused {
+    color: #fff !important;
+    background-color: #ff4d4d;
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
 }
 
 .nav-item.active {

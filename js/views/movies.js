@@ -17,7 +17,7 @@ window.moviesView = {
                     <a href="#/movies" class="nav-item active">أفلام</a>
                     <a href="#/series" class="nav-item">مسلسلات</a>
                     <a href="#/livetv" class="nav-item">بث مباشر</a>
-                    <a href="#/login" id="logout-btn" class="nav-item" style="color: #ff4d4d;">خروج</a>
+                    <a href="#/login" id="logout-btn" class="nav-item nav-logout" style="color: #ff4d4d;">تسجيل الخروج</a>
                 </div>
                 <div class="user-info" style="text-align: left;">
                     <div style="font-weight: bold;">${userInfo ? userInfo.username : 'المستخدم'}</div>
