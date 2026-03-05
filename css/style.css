@@ -707,14 +707,17 @@ video {
 /* New Live TV Layout */
 .livetv-layout {
     display: flex;
-    height: calc(100vh - 60px);
-    margin-top: 60px;
+    height: calc(100vh - 80px);
+    /* Adjust based on navbar height */
+    margin-top: 80px;
+    /* Push below the fixed navbar */
     overflow: hidden;
     background: #000;
 }
 
 .livetv-sidebar-v2 {
     width: 300px;
+    margin-top: 2%;
     background: #111;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
