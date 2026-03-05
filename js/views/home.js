@@ -101,12 +101,7 @@ window.homeView = {
                     <div class="hero-content">
                         <h1 class="hero-title">مرحباً ${userInfo ? userInfo.username : 'بك'}</h1>
                         <p class="hero-desc">استمتع بأحدث الإضافات وتابع مشاهدة ما تفضله من حيث توقفت.</p>
-                        
-                        <div class="search-container-home" style="margin-top: 20px; display: flex; gap: 10px; max-width: 400px;">
-                            <input type="text" id="home-search-input" placeholder="ابحث عن فيلم، مسلسل، أو قناة..." 
-                                   style="flex-grow: 1; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; border: 1px solid rgba(255,255,255,0.2);">
-                            <button class="btn" id="home-search-btn" style="padding: 10px 20px;">🔍</button>
-                        </div>
+                        <button class="btn" onclick="Router.navigate('#/movies')" style="margin-top: 20px;">تصفح الأفلام</button>
                     </div>
                 </div>
             `;
@@ -162,23 +157,6 @@ window.homeView = {
             }
 
             contentDiv.innerHTML = html;
-
-            // Setup Search Logic
-            const searchInput = document.getElementById('home-search-input');
-            const searchBtn = document.getElementById('home-search-btn');
-
-            const performSearch = () => {
-                const query = searchInput.value.trim();
-                if (query) {
-                    // Navigate to a search view or handle in-place (let's use params)
-                    Router.navigate(`#/movies?search=${encodeURIComponent(query)}`);
-                }
-            };
-
-            searchBtn.addEventListener('click', performSearch);
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') performSearch();
-            });
 
         } catch (e) {
             console.error(e);
