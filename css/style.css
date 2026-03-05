@@ -160,6 +160,23 @@ a {
     z-index: 100;
 }
 
+.nav-logo {
+    width: 80px;
+    border-radius: 0;
+    background: none;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)) drop-shadow(0 8px 20px rgba(138, 43, 226, 0.4)) drop-shadow(0 12px 40px rgba(138, 43, 226, 0.2));
+    transform: perspective(800px) translateZ(30px) scale(1.05);
+    transition: transform 0.4s ease, filter 0.4s ease;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
+}
+
+.nav-logo:hover {
+    transform: perspective(800px) translateZ(50px) scale(1.15);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.7)) drop-shadow(0 12px 30px rgba(138, 43, 226, 0.6)) drop-shadow(0 20px 60px rgba(138, 43, 226, 0.3));
+}
+
 .nav-links {
     display: flex;
     gap: 20px;

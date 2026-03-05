@@ -11,7 +11,7 @@ window.moviesView = {
 
         container.innerHTML = `
             <div class="navbar">
-                <img src="img/logo.jpg" alt="XSMART TV" style="width: 80px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+                <img src="img/logo.png" alt="XSMART TV" class="nav-logo">
                 <div class="nav-links">
                     <a href="#/home" class="nav-item">الرئيسية</a>
                     <a href="#/movies" class="nav-item active">أفلام</a>

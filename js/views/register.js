@@ -3,7 +3,7 @@ window.registerView = {
         container.innerHTML = `
             <div class="login-container fade-in">
                 <div class="login-box">
-                    <img src="img/logo.jpg" alt="XSMART TV" class="login-logo" style="width: 150px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                    <img src="img/logo.png" alt="XSMART TV" class="login-logo" style="width: 150px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
                     <h2 style="margin-bottom: 20px;">إنشاء حساب جديد</h2>
                     <form id="register-form" class="login-form">
                         <div class="input-group">
