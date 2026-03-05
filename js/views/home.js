@@ -61,25 +61,44 @@ window.homeView = {
             const moviesCats = await API.getCategories('get_vod_categories');
             let latestStreams = [];
             if (moviesCats && moviesCats.length > 0) {
-                // Get streams from the first category
                 latestStreams = await API.getStreams('get_vod_streams', moviesCats[0].category_id);
-                latestStreams = latestStreams.slice(0, 20); // Top 20
+                latestStreams = latestStreams.slice(0, 20);
             }
 
-            // Load recently watched from local storage
+            // Fetch Live TV Highlights (Sample from first category)
+            const liveCats = await API.getCategories('get_live_categories');
+            let liveStreams = [];
+            if (liveCats && liveCats.length > 0) {
+                liveStreams = await API.getStreams('get_live_streams', liveCats[0].category_id);
+                liveStreams = liveStreams.slice(0, 15);
+            }
+
+            // Load Favorites
+            const favMovies = Storage.get('favorites_movie') || [];
+            const favSeries = Storage.get('favorites_series') || [];
+            const allFavs = [...favMovies, ...favSeries];
+
+            // Load recently watched
             const recentSeries = Storage.getHistory('series');
             const recentMovies = Storage.getHistory('movie');
             const userInfo = Storage.get('user_info');
 
             let html = '';
 
-            // Hero section
+            // Dynamic Hero section based on latest content
+            const heroItem = latestStreams.length > 0 ? latestStreams[0] : null;
+            const heroTitle = heroItem ? heroItem.name : `مرحباً ${userInfo ? userInfo.username : 'بك'}`;
+            const heroIcon = heroItem ? (heroItem.backdrop_path ? heroItem.backdrop_path[0] : (heroItem.cover || heroItem.stream_icon)) : 'https://image.tmdb.org/t/p/original/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg';
+
             html += `
-                <div class="hero-banner" style="background-image: url('https://image.tmdb.org/t/p/original/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg');">
+                <div class="hero-banner" style="background-image: url('${heroIcon}');">
                     <div class="hero-content">
-                        <h1 class="hero-title">مرحباً ${userInfo ? userInfo.username : 'بك'}</h1>
-                        <p class="hero-desc">استمتع بأحدث الإضافات وتابع مشاهدة ما تفضله من حيث توقفت.</p>
-                        <button class="btn" onclick="Router.navigate('#/movies')">تصفح الأفلام</button>
+                        <h1 class="hero-title">${heroTitle}</h1>
+                        <p class="hero-desc">استمتع بأحدث الإضافات وتابع مشاهدة ما تفضله من حيث توقفت، مع إمكانية الوصول السريع لقنواتك المفضلة.</p>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="btn" onclick="Router.navigate('#/movies')">تصفح الأفلام</button>
+                            <button class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid white;" onclick="Router.navigate('#/series')">المسلسلات</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -89,17 +108,27 @@ window.homeView = {
                 html += this.buildCarouselRow('أحدث الإضافات', latestStreams, 'movie', 'row-latest');
             }
 
-            // 2. Recently Watched Series
+            // 2. Favorites (if any)
+            if (allFavs.length > 0) {
+                html += this.buildCarouselRow('المفضلة', allFavs, 'movie', 'row-favorites');
+            }
+
+            // 3. Recently Watched Series
             if (recentSeries.length > 0) {
                 html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series', 'row-recent-series');
             }
 
-            // 3. Recently Watched Movies
+            // 4. Recently Watched Movies
             if (recentMovies.length > 0) {
                 html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie', 'row-recent-movies');
             }
 
-            if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0) {
+            // 5. Live TV Highlights
+            if (liveStreams.length > 0) {
+                html += this.buildCarouselRow('بث مباشر', liveStreams, 'live', 'row-live-highlights');
+            }
+
+            if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0 && liveStreams.length === 0) {
                 html += `
                     <div style="padding: 40px; text-align: center; color: #888;">
                         <h2 style="margin-bottom: 20px;">لا يوجد محتوى لعرضه حالياً</h2>
