@@ -54,12 +54,18 @@ window.homeView = {
         const contentDiv = document.getElementById('home-content');
 
         try {
-            // Let's load categories and a few items for demo instead of everything to avoid hanging
-            // In a real app we would paginate or lazy load
+            // Fetch 'Latest Additions' from the first VOD category as a proxy
+            const moviesCats = await API.getCategories('get_vod_categories');
+            let latestStreams = [];
+            if (moviesCats && moviesCats.length > 0) {
+                // Get streams from the first category
+                latestStreams = await API.getStreams('get_vod_streams', moviesCats[0].category_id);
+                latestStreams = latestStreams.slice(0, 20); // Top 20
+            }
 
             // Load recently watched from local storage
-            const recentMovies = Storage.getHistory('movie');
             const recentSeries = Storage.getHistory('series');
+            const recentMovies = Storage.getHistory('movie');
 
             let html = '';
 
@@ -68,25 +74,32 @@ window.homeView = {
                 <div class="hero-banner" style="background-image: url('https://image.tmdb.org/t/p/original/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg');">
                     <div class="hero-content">
                         <h1 class="hero-title">مرحباً ${userInfo ? userInfo.username : 'بك'}</h1>
-                        <p class="hero-desc">تابع مشاهدة أفلامك ومسلسلاتك المفضلة من حيث توقفت، واستكشف المزيد من مكتبتنا الضخمة.</p>
+                        <p class="hero-desc">استمتع بأحدث الإضافات وتابع مشاهدة ما تفضله من حيث توقفت.</p>
                         <button class="btn" onclick="Router.navigate('#/movies')">تصفح الأفلام</button>
                     </div>
                 </div>
             `;
 
-            if (recentMovies.length > 0) {
-                html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie');
+            // 1. Latest Additions
+            if (latestStreams.length > 0) {
+                html += this.buildCarouselRow('أحدث الإضافات', latestStreams, 'movie', 'row-latest');
             }
 
+            // 2. Recently Watched Series
             if (recentSeries.length > 0) {
-                html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series');
+                html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series', 'row-recent-series');
             }
 
-            if (recentMovies.length === 0 && recentSeries.length === 0) {
+            // 3. Recently Watched Movies
+            if (recentMovies.length > 0) {
+                html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie', 'row-recent-movies');
+            }
+
+            if (latestStreams.length === 0 && recentMovies.length === 0 && recentSeries.length === 0) {
                 html += `
                     <div style="padding: 40px; text-align: center; color: #888;">
-                        <h2 style="margin-bottom: 20px;">لا يوجد سجل مشاهدات حالياً</h2>
-                        <p>تصفح الأفلام والمسلسلات وابدأ المشاهدة الآن!</p>
+                        <h2 style="margin-bottom: 20px;">لا يوجد محتوى لعرضه حالياً</h2>
+                        <p>يرجى التحقق من اتصالك بالإنترنت أو تصفح الأقسام الأخرى.</p>
                     </div>
                 `;
             }
@@ -99,13 +112,15 @@ window.homeView = {
         }
     },
 
-    buildCarouselRow: function (title, items, type) {
+    buildCarouselRow: function (title, items, type, rowId) {
         if (!items || items.length === 0) return '';
 
         let rowHtml = `
             <div class="row">
                 <div class="row-title">${title}</div>
-                <div class="row-posters">
+                <button class="slider-btn slider-btn-right" onclick="homeView.scrollRow('${rowId}', -300)">&#10094;</button>
+                <button class="slider-btn slider-btn-left" onclick="homeView.scrollRow('${rowId}', 300)">&#10095;</button>
+                <div class="row-posters" id="${rowId}">
         `;
 
         items.forEach(item => {
@@ -124,5 +139,13 @@ window.homeView = {
             </div>
         `;
         return rowHtml;
+    },
+
+    scrollRow: function (rowId, amount) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            // amount > 0 scrolls left (forward in RTL), amount < 0 scrolls right (backward in RTL)
+            row.scrollBy({ left: amount, behavior: 'smooth' });
+        }
     }
 };

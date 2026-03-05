@@ -299,6 +299,8 @@ a {
 .row {
     margin-bottom: 30px;
     padding-left: 40px;
+    position: relative;
+    /* For slider buttons */
 }
 
 .row-title {
@@ -312,6 +314,44 @@ a {
     scroll-behavior: smooth;
     gap: 15px;
     padding: 10px 0;
+}
+
+.row-posters::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar for a cleaner look when using buttons */
+}
+
+/* Slider Controls */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    font-size: 2rem;
+    padding: 10px 15px;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity 0.3s, background 0.3s;
+}
+
+.row:hover .slider-btn {
+    opacity: 1;
+}
+
+.slider-btn:hover {
+    background: var(--primary-color);
+}
+
+.slider-btn-left {
+    left: 0;
+}
+
+.slider-btn-right {
+    right: 0;
 }
 
 /* Content Grid (Movies, Series, Live TV pages) */
