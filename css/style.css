@@ -149,7 +149,7 @@ a {
     justify-content: space-between;
     align-items: center;
     padding: 15px 40px;
-    background: rgb(169, 85, 247);
+    background: rgba(168, 85, 247, 0.85);
     /* Vibrant light purple (Purple-500 ish) */
     backdrop-filter: blur(12px);
     /* Add a frosted glass effect */
