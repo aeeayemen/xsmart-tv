@@ -1,5 +1,5 @@
 const API = {
-    backendUrl: window.location.origin + '/backend',
+    backendUrl: 'backend',
     host: '',
     username: '',
     password: '',
