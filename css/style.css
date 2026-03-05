@@ -707,9 +707,9 @@ video {
 /* New Live TV Layout */
 .livetv-layout {
     display: flex;
-    height: calc(100vh - 110px);
+    height: calc(100vh - 80px);
     /* Adjust based on navbar height */
-    margin-top: 110px;
+    margin-top: 80px;
     /* Push below the fixed navbar */
     overflow: hidden;
     background: #000;
@@ -1077,6 +1077,15 @@ video {
         overflow-y: auto;
     }
 
+    .page-layout {
+        padding-top: 70px;
+    }
+
+    .livetv-layout {
+        margin-top: 60px;
+        height: calc(100vh - 60px);
+    }
+
     .hero-banner {
         height: 30vh;
         padding: 20px;
@@ -1273,7 +1282,12 @@ video {
 
     /* Live TV Refinements */
     .livetv-layout {
-        margin-top: 150px;
+        margin-top: 50px;
+        height: calc(100vh - 50px);
+    }
+
+    .page-layout {
+        padding-top: 55px;
     }
 
     .cat-header {
