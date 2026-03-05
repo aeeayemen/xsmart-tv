@@ -26,9 +26,17 @@ window.detailsView = {
             const desc = info.description || info.plot || "لا يوجد وصف متاح لهذا العمل.";
             const cover = info.backdrop_path && info.backdrop_path[0] ? info.backdrop_path[0] : (info.cover_big || info.movie_image || info.cover || "https://via.placeholder.com/1280x720");
             const rating = info.rating || info.rating_5o || "N/A";
-            const favs = await API.getRemoteFavorites(params.type);
-            const isFav = favs.some(f => String(f.stream_id) === String(params.id));
+            const isFav = Storage.isFavorite(params.type, params.id);
             const favText = isFav ? "إزالة من المفضلة" : "إضافة للمفضلة";
+
+            // Add to history (Recently Watched)
+            Storage.addToHistory(params.type, {
+                stream_id: params.id,
+                series_id: params.id,
+                name: title,
+                cover: info.cover_big || info.movie_image || info.cover,
+                stream_icon: info.stream_icon || info.cover || info.movie_image
+            });
 
             container.innerHTML = `
                 <div class="details-container" style="background-image: url('${cover}');">
@@ -44,14 +52,14 @@ window.detailsView = {
                                     </div>
                                     <p class="details-desc">${desc}</p>
                                 </div>
-                                <img src="${info.cover || info.stream_icon}" style="width: 200px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.8);" class="hide-mobile">
+                                <img src="${info.cover || info.stream_icon || info.movie_image}" style="width: 200px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.8);" class="hide-mobile">
                             </div>
                             
                             <div class="details-actions">
                                 ${params.type !== 'series' ? `
                                     <button class="btn" id="play-btn">▶ تشغيل الآن</button>
                                 ` : ''}
-                                <button class="btn btn-secondary" id="fav-btn" data-isfav="${isFav}">
+                                <button class="btn btn-secondary" id="fav-btn">
                                     <span id="fav-icon">${isFav ? '♥' : '♡'}</span> <span id="fav-text">${favText}</span>
                                 </button>
                                 <button class="btn btn-secondary" onclick="window.history.back()">رجوع</button>
@@ -81,20 +89,23 @@ window.detailsView = {
                 });
             }
 
-            document.getElementById('fav-btn').addEventListener('click', async () => {
-                const favBtn = document.getElementById('fav-btn');
-                const isCurrentlyFav = favBtn.dataset.isfav === "true";
+            document.getElementById('fav-btn').addEventListener('click', () => {
+                const item = {
+                    stream_id: params.id,
+                    series_id: params.id,
+                    name: title,
+                    stream_icon: info.cover || info.stream_icon || info.movie_image,
+                    cover: info.cover || info.stream_icon || info.movie_image || info.backdrop_path?.[0]
+                };
 
-                // Optimistic UI update
-                favBtn.dataset.isfav = !isCurrentlyFav;
-                document.getElementById('fav-icon').innerText = isCurrentlyFav ? '♡' : '♥';
-                document.getElementById('fav-text').innerText = isCurrentlyFav ? 'إضافة للمفضلة' : 'إزالة من المفضلة';
-
-                if (isCurrentlyFav) {
-                    await API.removeRemoteFavorite(params.type, params.id);
+                if (Storage.isFavorite(params.type, params.id)) {
+                    Storage.removeFavorite(params.type, params.id);
+                    document.getElementById('fav-icon').innerText = '♡';
+                    document.getElementById('fav-text').innerText = 'إضافة للمفضلة';
                 } else {
-                    const iconUrl = info.cover || info.stream_icon || info.movie_image || (info.backdrop_path ? info.backdrop_path[0] : '');
-                    await API.addRemoteFavorite(params.type, params.id, title, iconUrl);
+                    Storage.addFavorite(params.type, item);
+                    document.getElementById('fav-icon').innerText = '♥';
+                    document.getElementById('fav-text').innerText = 'إزالة من المفضلة';
                 }
             });
 

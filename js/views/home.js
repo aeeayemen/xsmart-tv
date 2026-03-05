@@ -57,40 +57,38 @@ window.homeView = {
             // Let's load categories and a few items for demo instead of everything to avoid hanging
             // In a real app we would paginate or lazy load
 
-            const [moviesCats, seriesCats] = await Promise.all([
-                API.getCategories('get_vod_categories'),
-                API.getCategories('get_series_categories')
-            ]);
+            // Load recently watched from local storage
+            const recentMovies = Storage.getHistory('movie');
+            const recentSeries = Storage.getHistory('series');
 
             let html = '';
 
-            // Hero section - pick random popular movie later, hardcode for now
+            // Hero section
             html += `
                 <div class="hero-banner" style="background-image: url('https://image.tmdb.org/t/p/original/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg');">
                     <div class="hero-content">
-                        <h1 class="hero-title">أحدث الإضافات</h1>
-                        <p class="hero-desc">استمتع بتشكيلة من أفضل وأحدث الأفلام والمسلسلات المضافة حديثاً في مكتبتك.</p>
-                        <button class="btn" onclick="Router.navigate('#/movies')">تصفح الآن</button>
+                        <h1 class="hero-title">مرحباً ${userInfo ? userInfo.username : 'بك'}</h1>
+                        <p class="hero-desc">تابع مشاهدة أفلامك ومسلسلاتك المفضلة من حيث توقفت، واستكشف المزيد من مكتبتنا الضخمة.</p>
+                        <button class="btn" onclick="Router.navigate('#/movies')">تصفح الأفلام</button>
                     </div>
                 </div>
             `;
 
-            // Just load the first 2 movie categories to keep it fast
-            if (moviesCats && moviesCats.length > 0) {
-                for (let i = 0; i < Math.min(2, moviesCats.length); i++) {
-                    const cat = moviesCats[i];
-                    const streams = await API.getStreams('get_vod_streams', cat.category_id);
-                    html += this.buildCarouselRow(cat.category_name, streams.slice(0, 15), 'movie');
-                }
+            if (recentMovies.length > 0) {
+                html += this.buildCarouselRow('أفلام شاهدتها مؤخراً', recentMovies, 'movie');
             }
 
-            // Series categories
-            if (seriesCats && seriesCats.length > 0) {
-                for (let i = 0; i < Math.min(1, seriesCats.length); i++) {
-                    const cat = seriesCats[i];
-                    const streams = await API.getStreams('get_series', cat.category_id);
-                    html += this.buildCarouselRow('مسلسلات: ' + cat.category_name, streams.slice(0, 15), 'series');
-                }
+            if (recentSeries.length > 0) {
+                html += this.buildCarouselRow('مسلسلات شاهدتها مؤخراً', recentSeries, 'series');
+            }
+
+            if (recentMovies.length === 0 && recentSeries.length === 0) {
+                html += `
+                    <div style="padding: 40px; text-align: center; color: #888;">
+                        <h2 style="margin-bottom: 20px;">لا يوجد سجل مشاهدات حالياً</h2>
+                        <p>تصفح الأفلام والمسلسلات وابدأ المشاهدة الآن!</p>
+                    </div>
+                `;
             }
 
             contentDiv.innerHTML = html;

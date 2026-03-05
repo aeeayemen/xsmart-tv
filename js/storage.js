@@ -48,5 +48,23 @@ const Storage = {
 
     getResumeProgress: function (id) {
         return this.get(`resume_${id}`) || 0;
+    },
+
+    // History Logic (Recently Watched)
+    addToHistory: function (type, item) {
+        let history = this.get(`history_${type}`) || [];
+        // Remove if exists to push it to the top
+        history = history.filter(h => (h.stream_id && h.stream_id !== item.stream_id) || (h.series_id && h.series_id !== item.series_id) || (!h.stream_id && !h.series_id));
+        history.unshift(item); // Add to the beginning
+
+        // Keep only top 15 items
+        if (history.length > 15) {
+            history = history.slice(0, 15);
+        }
+        this.set(`history_${type}`, history);
+    },
+
+    getHistory: function (type) {
+        return this.get(`history_${type}`) || [];
     }
 };
